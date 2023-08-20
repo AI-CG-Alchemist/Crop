@@ -4,7 +4,13 @@ import os
 import re
 from tqdm import tqdm
 
-my_api_key = 'AIzaSyBtbqWG742DzSL0iADOx_07OEkGqLMxwBk'
+if not os.path.exists('./data'):
+    os.mkdir('./data')
+
+if not os.path.exists('./output'):
+    os.mkdir('./output')
+
+my_api_key = 'AIzaSyCvD4r9JfCgoEMSmipirkXx3dO8-RO-o3E'
 api_uri = 'https://www.googleapis.com/youtube/v3/'
 
 sun_s = 0
@@ -47,24 +53,24 @@ def quality(item):
                 continue
 
 def merge(title):
-    ffmpeg = 'ffmpeg -i ' + title + '.mp4 -i ' + title + '.mp3 -acodec copy -vcodec copy ' + title + '-out.mp4'
+    ffmpeg = 'ffmpeg -i ' + title + '.mp4 -i ' + title + '.mp3 -acodec copy -vcodec copy ' + f'Youtube_{i}.mp4'
     os.system(ffmpeg)
     os.remove(title + '.mp4')
     os.remove(title + '.mp3')
 
 if __name__ == '__main__':
-    baseUrl = f'{api_uri}search?key={my_api_key}&maxResults={num}&part=id&type=video&q={search}'
+    baseUrl = f'https://www.googleapis.com/youtube/v3/search?key={my_api_key}&maxResults={num}&part=id&type=video&q={search}'
     Info = json.loads(fecthData(baseUrl).text)
-    if not os.path.exists('./youtube'):
-        os.mkdir('./youtube')
-    for item in Info['items']:
+    if not os.path.exists('./data'):
+        os.mkdir('./data')
+    for i, item in enumerate(Info['items']):
         # 利用youtube的api来获取视频的vid，每个youtube视频对应着一个vid
         vid = item['id']['videoId']
         
         # YouTube视频的地址
         down_url = f'https://www.youtube.com/watch?v=Z-P1PmfJyaQ'
-        with open('./youtube/lists.txt', 'a') as f:
-            f.write(down_url + '\n')
+        # with open('./data/lists.txt', 'a') as f:
+        #     f.write(down_url + '\n')
 
 
         # 获取视频和对应音频的下载地址
@@ -80,22 +86,22 @@ if __name__ == '__main__':
         title = re.sub(r'[\/:|?*"<>]', '', title)
 
         # 下载音频,音频拆分为1Bytes多次下载
-        audio = requests.get(audio_url, stream=True)
-        file_size = int(audio.headers.get('Content-Length'))
-        audio_pbar = tqdm(total=file_size)
-        with open(f'./youtube/{title}.mp3', mode='wb') as f:
-            for audio_chunk in audio.iter_content(1024):
-                f.write(audio_chunk)
-                audio_pbar.set_description(f'正在下载{title}音频中......')
-                audio_pbar.update(1024)
-            audio_pbar.set_description('下载完成！')
-            audio_pbar.close()
+        # audio = requests.get(audio_url, stream=True)
+        # file_size = int(audio.headers.get('Content-Length'))
+        # audio_pbar = tqdm(total=file_size)
+        # with open(f'./data/{title}.mp3', mode='wb') as f:
+        #     for audio_chunk in audio.iter_content(1024):
+        #         f.write(audio_chunk)
+        #         audio_pbar.set_description(f'正在下载{title}音频中......')
+        #         audio_pbar.update(1024)
+        #     audio_pbar.set_description('下载完成！')
+        #     audio_pbar.close()
 
         # 下载视频，将视频拆分为1Bytes多次下载
         video = requests.get(video_url, stream=True)
         file_size = int(video.headers.get('Content-Length'))
         video_pbar = tqdm(total=file_size)
-        with open(f'./youtube/{title}.mp4', mode='wb') as f:
+        with open(f'./data/Youtube_{i + 1}.mp4', mode='wb') as f:
             for video_chunk in video.iter_content(1024):
                 f.write(video_chunk)
                 video_pbar.set_description(f'正在下载{title}视频中......')
@@ -107,7 +113,7 @@ if __name__ == '__main__':
 
 
         # 合并音频和视频
-        merge('./youtube/' + title)
+        # merge('./data/' + str(i))
 
         # print(json.loads(down_res.text))
         # download_video(down_res.content, video_name)

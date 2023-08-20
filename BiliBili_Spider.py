@@ -8,6 +8,12 @@ import time
 import random
 
 
+if not os.path.exists('./data'):
+    os.mkdir('./data')
+
+if not os.path.exists('./output'):
+    os.mkdir('./output')
+
 # 关闭非https报错
 requests.packages.urllib3.disable_warnings()
 
@@ -46,13 +52,13 @@ def solve():
         url = baseURL+"&page="+str(page)
         data = fetchData(url)["data"]
         video_list = data["result"]
-        for v in video_list:
+        for i, v in enumerate(video_list):
             index += 1
             link = v['arcurl']
             bv = v['bvid']
             print("视频访问地址:"+link)  # debug
             print("视频bv号:"+bv)  # debug
-            getBiliBiliVideo(link, bv, index)
+            getBiliBiliVideo(link, bv, index, i)
             if index >= min(num, video_num):
                 return
         # 当爬取视频数量很多时开启防止频繁请求封ip
@@ -73,7 +79,7 @@ def fetchData(url):
 ''' 根据bv号获取某一个视频'''
 
 
-def getBiliBiliVideo(link, bv, index):
+def getBiliBiliVideo(link, bv, index, i):
     session = requests.session()
     headers.update({'Referer': 'https://www.bilibili.com/'})
     res = session.get(url=link, headers=headers, verify=False)
@@ -106,7 +112,7 @@ def getBiliBiliVideo(link, bv, index):
         print("音频下载地址:"+audioURL)  # debug
         audioPath = dirName + "/"+str(index)+"-"+bv+"_Audio.mp3"
         fileDownload(link=link, url=audioURL, path=audioPath, session=session)
-        outPath = dirName + "/"+str(index)+"-"+bv+"_Video.mp4"
+        outPath = dirName + f"/Bili_{i + 1}.mp4"
         print("文件存储地址:"+outPath)  # debug
         combineVideoAudio(videoPath, audioPath, outPath)
     print("第"+str(index)+"个视频下载完成")
@@ -159,7 +165,7 @@ if __name__ == '__main__':
     # num = input("请输入下载文件数量:")
 
     # 测试用
-    destFolder = "result"
+    destFolder = "data"
     prompt = "街头采访穿搭"
     num = 3
 
