@@ -80,6 +80,10 @@ def fetchData(url):
 
 
 def getBiliBiliVideo(link, bv, index, i):
+    if os.path.exists(f'./data/Bili_{bv}.mp4'):
+        print('该视频已存在')
+        return
+
     session = requests.session()
     headers.update({'Referer': 'https://www.bilibili.com/'})
     res = session.get(url=link, headers=headers, verify=False)
@@ -112,7 +116,7 @@ def getBiliBiliVideo(link, bv, index, i):
         print("音频下载地址:"+audioURL)  # debug
         audioPath = dirName + "/"+str(index)+"-"+bv+"_Audio.mp3"
         fileDownload(link=link, url=audioURL, path=audioPath, session=session)
-        outPath = dirName + f"/Bili_{i + 1}.mp4"
+        outPath = dirName + f"/Bili_{bv}.mp4"
         print("文件存储地址:"+outPath)  # debug
         combineVideoAudio(videoPath, audioPath, outPath)
     print("第"+str(index)+"个视频下载完成")
@@ -167,6 +171,6 @@ if __name__ == '__main__':
     # 测试用
     destFolder = "data"
     prompt = "街头采访穿搭"
-    num = 3
+    num = 10
 
     solve()

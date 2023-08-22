@@ -66,9 +66,11 @@ if __name__ == '__main__':
     for i, item in enumerate(Info['items']):
         # 利用youtube的api来获取视频的vid，每个youtube视频对应着一个vid
         vid = item['id']['videoId']
-        
+        if os.path.exists(f'./data/Youtube_{vid}.mp4'):
+            print('该视频已存在')
+            continue
         # YouTube视频的地址
-        down_url = f'https://www.youtube.com/watch?v=Z-P1PmfJyaQ'
+        down_url = f'https://www.youtube.com/watch?v={vid}'
         # with open('./data/lists.txt', 'a') as f:
         #     f.write(down_url + '\n')
 
@@ -101,7 +103,7 @@ if __name__ == '__main__':
         video = requests.get(video_url, stream=True)
         file_size = int(video.headers.get('Content-Length'))
         video_pbar = tqdm(total=file_size)
-        with open(f'./data/Youtube_{i + 1}.mp4', mode='wb') as f:
+        with open(f'./data/Youtube_{vid}.mp4', mode='wb') as f:
             for video_chunk in video.iter_content(1024):
                 f.write(video_chunk)
                 video_pbar.set_description(f'正在下载{title}视频中......')
