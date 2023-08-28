@@ -62,7 +62,7 @@ def search_videourl(temp):
 def work(i, processLock):
     try:
     #找出符合条件的视频链接
-        url = search_videourl(i['aweme_info']['video']['play_addr']['url_list'])
+        url = search_videourl(i['aweme_info']['video']['bit_rate'][0]['play_addr']['url_list'])
         
         # # 检测搜索出的视频的标签中是否包含所需的关键字，一般是有的，如果没有，跳过这条搜索结果
         # for keyword in videoKeywords:

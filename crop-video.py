@@ -13,6 +13,12 @@ warnings.filterwarnings("ignore")
 
 crop_num = 0
 
+if not os.path.exists('./output'):
+    os.mkdir('./output')
+
+if not os.path.exists('./data'):
+    os.mkdir('./data')
+
 def extract_bbox(frame, fa):
     if max(frame.shape[0], frame.shape[1]) > 640:
         # 1920 / 640
@@ -77,7 +83,18 @@ def compute_bbox(start, end, fps, tube_bbox, frame_shape, inp, image_shape, incr
     name = urlist[-1].split('.')[0]
     global crop_num
     crop_num += 1
-    return f'ffmpeg -i {inp} -ss {start} -t {time} -filter:v "crop={w}:{h}:{left}:{top}, scale={scale}" ./output/{name}_crop{crop_num}.mp4'
+
+    print(frame_shape[0])
+    h = 2.5 * h
+    if (top + h) > frame_shape[0]:
+        h = frame_shape[0] - top
+    left = left - 1/3 * w
+    if left <= 0:
+        left = 0
+    w = (5 / 3) * w
+    if (w + left) > frame_shape[1]:
+        w = frame_shape[1] - left
+    return f'ffmpeg -i {inp} -ss {start} -t {time} -filter:v "crop={w}:{h}:{left}:{top}" -crf 18 ./output/{name}_crop{crop_num}.mp4'
 
 
 def compute_bbox_trajectories(trajectories, fps, frame_shape, args):
@@ -149,10 +166,10 @@ def process_video(args):
 if __name__ == "__main__":
     parser = ArgumentParser()
 
-    parser.add_argument("--image_shape", default=(256, 256), type=lambda x: tuple(map(int, x.split(','))),
+    parser.add_argument("--image_shape", default=(512, 896), type=lambda x: tuple(map(int, x.split(','))),
                         help="Image shape")
     parser.add_argument("--increase", default=0.1, type=float, help='Increase bbox by this amount')
-    parser.add_argument("--iou_with_initial", type=float, default=0.25, help="The minimal allowed iou with inital bbox")
+    parser.add_argument("--iou_with_initial", type=float, default=0.2, help="The minimal allowed iou with inital bbox")
     parser.add_argument("--inp", required=True, help='Input image or video')
     parser.add_argument("--min_frames", type=int, default=150,  help='Minimum number of frames')
     parser.add_argument("--cpu", dest="cpu", action="store_true", help="cpu mode.")
